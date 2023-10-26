@@ -14,7 +14,7 @@ from django import forms
 from tinymce.widgets import TinyMCE
 from .models import *
 
-class YourModelForm(forms.ModelForm):
+class blogform(forms.ModelForm):
     content = forms.CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 20}))
 
     class Meta:

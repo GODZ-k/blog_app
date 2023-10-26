@@ -11,6 +11,7 @@ class Profile(models.Model):
     token = models.CharField(max_length=100)
 
 class blogmodel(models.Model):
+    user=models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
     title = models.CharField(max_length=1500)
     content=HTMLField()
     slug=models.SlugField(max_length=1000,null=True,blank=True)

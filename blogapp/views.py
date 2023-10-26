@@ -11,8 +11,20 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def home(request):
-    return render(request, 'home.html')
+    blog_content=blogmodel.objects.all()
+    data={
+        'blog': blog_content
+    }
 
+    return render(request, 'home.html', data)
+
+@login_required(login_url="/login/")
+def blog_details(request,slug):
+    blog_obj=blogmodel.objects.filter(slug=slug).first()
+    context={
+        'blog': blog_obj
+    }
+    return render(request, 'blog_detail.html',context)
 def login_page(request):
     try:
      if request.method == 'POST':
@@ -65,7 +77,19 @@ def logout_page(request):
     logout(request)
     return redirect("/login/")
 
-
+@login_required(login_url="/login/")
 def add_blog(request):
-    context={'form':YourModelForm()}
+    context={'form':blogform()}
+    if request.method == 'POST':
+        form=blogform(request.POST)
+        title=request.POST.get('title')
+        image=request.FILES.get('image')
+        user=request.user
+        if form.is_valid():
+            content=form.cleaned_data['content']
+        blogmodel.objects.create(
+            user=user,
+             title=title, image=image,content=content
+            )
+        return redirect("/add_blog/")
     return render(request,'add_blog.html',context)
