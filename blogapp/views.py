@@ -101,7 +101,7 @@ def login_page(request):
 
         if user_username := authenticate(username=username, password=password):
             login(request,user_username)
-            messages.success(request,"Welcome")
+            messages.success(request,"See you soon")
             return redirect('/')
 
         else:
