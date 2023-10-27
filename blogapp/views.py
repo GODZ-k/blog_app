@@ -11,20 +11,83 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def home(request):
-    blog_content=blogmodel.objects.all()
-    data={
+    try:
+     blog_content=blogmodel.objects.all()
+     data={
         'blog': blog_content
-    }
+     }
+    except Exception as e:
+        print(e)
 
     return render(request, 'home.html', data)
 
 @login_required(login_url="/login/")
 def blog_details(request,slug):
-    blog_obj=blogmodel.objects.filter(slug=slug).first()
-    context={
+    try:
+     blog_obj=blogmodel.objects.filter(slug=slug).first()
+     context={
         'blog': blog_obj
-    }
+     }
+    except Exception as e:
+        print(e)
     return render(request, 'blog_detail.html',context)
+
+@login_required(login_url="/login/")
+def see_blog(request):
+    try:
+     blog_objs=blogmodel.objects.filter(user=request.user)
+     context={
+        'blog_objs': blog_objs
+     }
+    except Exception as e:
+        print(e)
+    return render(request, 'see_blog.html',context)
+
+
+@login_required(login_url="/login/")
+def blog_delete(request,id):
+    try:
+     delete_blog=blogmodel.objects.get(id=id)
+     if delete_blog.user == request.user:
+         delete_blog.delete()
+     else:
+         return redirect("/see_blog/")
+    except Exception as e:
+        print(e)
+
+    return redirect("/")
+@login_required(login_url="/login/")
+def update_blog(request,slug):  # sourcery skip: extract-method
+    try:
+     blog_objs=blogmodel.objects.get(slug=slug)
+     if blog_objs.user != request.user:
+        return redirect("/")
+
+     initial_dict={
+        'content': blog_objs.content
+     }
+     form=blogform(initial=initial_dict)
+     if request.method == 'POST':
+      form=blogform(request.POST)
+      title=request.POST.get('title')
+      image=request.FILES.get('image')
+      user=request.user
+      if form.is_valid():
+        content=form.cleaned_data['content']
+      blog_objs= blogmodel.objects.create(
+        user=user,
+        title=title, image=image,content=content
+        )
+
+     context={
+       "blog_objs": blog_objs,
+       'form':form
+
+     }
+    except Exception as e:
+     print(e)
+    return render(request,"update_blog.html",context)
+
 def login_page(request):
     try:
      if request.method == 'POST':
@@ -79,8 +142,9 @@ def logout_page(request):
 
 @login_required(login_url="/login/")
 def add_blog(request):
-    context={'form':blogform()}
-    if request.method == 'POST':
+    try:
+     context={'form':blogform()}
+     if request.method == 'POST':
         form=blogform(request.POST)
         title=request.POST.get('title')
         image=request.FILES.get('image')
@@ -92,4 +156,6 @@ def add_blog(request):
              title=title, image=image,content=content
             )
         return redirect("/add_blog/")
+    except Exception as e:
+        print(e)
     return render(request,'add_blog.html',context)
