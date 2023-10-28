@@ -143,6 +143,14 @@ MEDIA_URL='/media/'
 
 TINYMCE_JS_ROOT = os.path.join(STATIC_ROOT, "tinymce")
 
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'email'
+EMAIL_HOST_PASSWORD = 'password'
+
 # TINYMCE_DEFAULT_CONFIG = {
 #     'cleanup_on_startup': True,
 #     # 'custom_undo_redo_levels': 20,

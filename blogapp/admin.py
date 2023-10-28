@@ -5,3 +5,4 @@ from blogapp.models import *
 # Register your models here.
 
 admin.site.register(blogmodel)
+admin.site.register(Profile)

@@ -3,6 +3,7 @@ from blogapp.models import *
 from django.contrib.auth.models import User
 from django.contrib import messages
 from blogapp.forms import *
+from blogapp.helper import *
 # from blogapp.forms import QuillPostForm
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
@@ -99,7 +100,11 @@ def login_page(request):
             messages.error(request,"Invalid username")
             return redirect("/login/")
 
-        if user_username := authenticate(username=username, password=password):
+        elif not Profile.objects.filter(user=user_username).first().is_verified:
+            messages.error(request,"Your profile isn't verified")
+            return redirect("/login/")
+
+        elif user_username := authenticate(username=user_username, password=password):
             login(request,user_username)
             messages.success(request,"See you soon")
             return redirect('/')
@@ -107,8 +112,8 @@ def login_page(request):
         else:
             messages.error(request,"Invalid password")
             return redirect('/login/')
-    except:
-     return redirect("/login/")
+    except Exception as e:
+      print(e)
 
     return render(request, 'login.html')
 
@@ -130,9 +135,13 @@ def _extracted_from_signup_page_4(request):
     if user_name.exists():
         messages.warning(request,"Username already exists")
 
-    user=User.objects.create(username=username)
-    user.set_password(password)
-    user.save()
+
+    user_obj=User.objects.create(username=username)
+    user_obj.set_password(password)
+    user_obj.save()
+    token=generate_random_string(20)
+    Profile.objects.create(user=user_obj,token=token)
+    send_main(token,username)
     messages.success(request,"Account Created succesfully")
     return redirect('/login/')
 
@@ -159,3 +168,14 @@ def add_blog(request):
     except Exception as e:
         print(e)
     return render(request,'add_blog.html',context)
+
+
+def verify(request,token):
+    try:
+        if Profile_obj := Profile.objects.filter(token=token).first():
+            Profile_obj.is_verified=True
+            Profile_obj.save()
+        return redirect("/login/")
+    except Exception as e:
+        print(e)
+
